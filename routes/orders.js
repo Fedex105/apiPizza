@@ -8,7 +8,7 @@ router.get('/', function(req, res, next) {
 
   funcAux.returnOrders()
   .then(orders => {
-      res.json(orders)
+      res.json(funcAux.orderFormat(orders))
   })
   .catch(err => {
     console.log(err)
@@ -31,7 +31,7 @@ router.get('/:id', function(req, res, next) {
 
   funcAux.returnOrder(id)
   .then(order => {
-      res.json(order)
+      res.json(funcAux.orderFormat(order))
   })
   .catch(err => {
     console.log(err)
