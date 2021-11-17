@@ -45,13 +45,44 @@ function returnOrder(id){
 
 function placeOrder(order){
   return new Promise(function(resolve, reject){
-    conn.query("SELECT * FROM orders WHERE idOrders=" + id, (err, rows) => {
+   /* conn.query("SELECT * FROM orders WHERE idOrders=" + id, (err, rows) => {
         if(err){
             reject(err);
         } else {
             resolve(rows);
         }
-    });
+    })*/
+
+    connection.beginTransaction(function(err) {
+        if (err) { throw err; }
+        connection.query('INSERT INTO orders (`orderStatus`, `orderName`, `orderDate`, `orderPhone`) VALUES data=?;', [true, order.orderName, getDate(),order.orderStatus], function (error, results, fields) {
+          if (error) {
+            return connection.rollback(function() {
+              throw error;
+            });
+          }
+          var id = results.insertId;
+      
+          connection.query('INSERT INTO order_items (`idOrder`, `idPizza`, `Quantity`) VALUES data=?', [id, ], function (error, results, fields) {
+            if (error) {
+              return connection.rollback(function() {
+                throw error;
+              });
+            }
+            connection.commit(function(err) {
+              if (err) {
+                return connection.rollback(function() {
+                  throw err;
+                });
+              }
+              console.log('success!');
+            });
+          });
+        });
+      });
+      
+
+
 })
 }
 
@@ -101,6 +132,24 @@ function orderFormat(orders){
     return formatedOrders
   }
 
+
+function getDate(){
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth() + 1; //January is 0!
+    var yyyy = today.getFullYear();
+
+    if (dd < 10) {
+    dd = '0' + dd;
+    }
+
+    if (mm < 10) {
+    mm = '0' + mm;
+    }
+
+    today = dd + '/' + mm + '/' + yyyy
+    return today
+}
 
 module.exports = {
     returnPizza : returnPizza,

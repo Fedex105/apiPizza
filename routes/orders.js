@@ -20,7 +20,6 @@ router.get('/', function(req, res, next) {
 router.post('/', function(req, res, next) {
 
   let order = req.body
-
   funcAux.placeOrder(order)
 
 });
@@ -31,7 +30,12 @@ router.get('/:id', function(req, res, next) {
 
   funcAux.returnOrder(id)
   .then(order => {
-      res.json(funcAux.orderFormat(order))
+      let orderForm = funcAux.orderFormat(order)
+      if(orderForm.length === 0){
+        console.log("Error, inexistent order")
+        }else{
+          res.json(orderForm[0])
+        }
   })
   .catch(err => {
     console.log(err)
