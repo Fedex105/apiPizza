@@ -19,8 +19,9 @@ router.get('/', function(req, res, next) {
 
 router.post('/', function(req, res, next) {
 
-  let order = req.body
-  funcAux.placeOrder(order)
+    let order = req.body
+    funcAux.placeOrder(order)
+    res.send("place order")
 
 });
 
