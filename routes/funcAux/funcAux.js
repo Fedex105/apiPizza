@@ -1,8 +1,10 @@
+require('dotenv').config()
 let mysql = require("mysql");
+console.log(process.env)
 let conn = mysql.createConnection({
-  host:"127.0.0.1",
-  user:"root",
-  password:"root",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
   database:"new_schema"
 })
 conn.connect();
@@ -44,15 +46,16 @@ function returnOrder(id){
 }
 
 function placeOrder(order){
+    return new Promise(function(resolve, reject){
         conn.beginTransaction(function(err) {
             if (err) { throw err; }
             var newOrder = [1, order.orderName, getDate(),order.orderPhone]
             conn.query('INSERT INTO orders (`orderStatus`, `orderName`, `orderDate`, `orderPhone`) VALUE (?, ?, ?, ?)', newOrder,function (error, results, fields) {
                     if (error) {
                         return conn.rollback(function() {
-                        throw error;
+                        reject(err);
                         });
-                    }
+                    } else {resolve(results.insertId)}
                 var id = results.insertId;
         
                 conn.query('INSERT INTO order_items (`idOrder`, `idPizza`, `Quantity`) VALUE ?',[pizzaItems(order.orderItems, id)] , function (error, results, fields) {
@@ -72,7 +75,21 @@ function placeOrder(order){
                 });
             });
         });
+    })
 }
+
+function orderSent(id){
+    return new Promise(function(resolve, reject){
+      conn.query("UPDATE orders SET orderStatus=0 WHERE idOrders=" + id, (err, rows) => {
+          if(err){
+              reject(err);
+          } else {
+              resolve(rows);
+          }
+      });
+  })
+  }
+
 
 function pizzaItems(items,id){
     var itemArray = []
@@ -152,5 +169,6 @@ module.exports = {
     returnOrders : returnOrders,
     returnOrder : returnOrder,
     placeOrder : placeOrder,
-    orderFormat : orderFormat
+    orderFormat : orderFormat,
+    orderSent : orderSent
   }
